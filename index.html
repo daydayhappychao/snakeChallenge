@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="./jquery-3.2.1.min.js"></script>
+    <script src="./snake.js"></script>
+    <title>贪吃蛇</title>
+    <style>
+        table {
+            display: table;
+            border-collapse: separate;
+            border-spacing: 0px;
+            border-color: grey;
+        }
+
+        #map {
+            border: 1px solid #000;
+            margin: auto
+        }
+
+        #map tr {
+            padding: 0
+        }
+
+        #map td {
+            width: 10px;
+            height: 10px;
+            padding: 0
+        }
+
+        .active {
+            background: red
+        }
+
+        .food {
+            background: #000
+        }
+    </style>
+</head>
+
+<body>
+    <table id="map">
+    </table>
+</body>
+
+</html>
+<script>
+    $(function () {
+        snake.start()
+    })
+
+</script>

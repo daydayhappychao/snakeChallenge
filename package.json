@@ -1,0 +1,19 @@
+{
+  "name": "snake-challenge",
+  "version": "0.1.0",
+  "description": "贪吃蛇大挑战，全自动的贪吃蛇，像看电视那样看着电脑自个儿玩贪吃蛇o(╯□╰)o",
+  "main": "index.js",
+  "scripts": {
+    "test": "buxu test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wangchaoduo/snakeChallenge.git"
+  },
+  "author": "Magin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wangchaoduo/snakeChallenge/issues"
+  },
+  "homepage": "https://github.com/wangchaoduo/snakeChallenge#readme"
+}
