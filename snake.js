@@ -3,7 +3,7 @@ var snake = {
     class: 'active',
     foodClass: 'food',
     size: 50,
-    speed: 50,
+    speed: 10,
     start: function () {
         var activeClass = this.class
         var nowFoodClass = this.foodClass
@@ -87,10 +87,10 @@ var snake = {
                 $($($(this.map).children('tr')[foodPoint[0]]).children('td')[foodPoint[1]]).addClass(nowFoodClass)
                 point++
                 $('#point').text(point)
-            } else if (snakeDie(snakeArr)) {
+            } /**else if (snakeDie(snakeArr)) {
                 clearInterval(run)
                 return
-            } else {
+            }*/ else {
                 $($($(this.map).children('tr')[snakeArr[0][0]]).children('td')[snakeArr[0][1]])
                     .removeClass(activeClass)
                 snakeArr.splice(0, 1)
@@ -143,21 +143,23 @@ function algorithms(snakeHead, food, direction, snakeArr, size) {
     var nextSnake = snakeArr.slice()
     if (direction == 0) {
         // nextSnake.push([snakeHead[0] - 1, snakeHead[1]])
-        if (snakeDie(nextSnake) || snakeHead[0] - 1 < 0) {
+        if (snakeDie(nextSnake)) {
             var left = 0
             var right = 0
             for (var i = 0; i < snakeArr.length; i++) {
                 if (snakeArr[i][1] < snakeHead[1]) left++
                 else if (snakeArr[i][1] < snakeHead[1]) right++
             }
-            if (left > right) return 1
+            if (left > right) {
+                return 1
+            }
             else if (left < right) return 3
             else if (snakeHead[1] * 2 < size) return 1
             else return 3
         }
     } else if (direction == 1) {
         // nextSnake.push([snakeHead[0], snakeHead[1] + 1])
-        if (snakeDie(nextSnake) || snakeHead[1] + 1 > (size - 1)) {
+        if (snakeDie(nextSnake)) {
             var top = 0
             var bottom = 0
             for (var i = 0; i < snakeArr.length; i++) {
@@ -171,7 +173,7 @@ function algorithms(snakeHead, food, direction, snakeArr, size) {
         }
     } else if (direction == 2) {
         // nextSnake.push([snakeHead[0] + 1, snakeHead[1]])
-        if (snakeDie(nextSnake) || snakeHead[0] + 1 > (size - 1)) {
+        if (snakeDie(nextSnake)) {
             var left = 0
             var right = 0
             for (var i = 0; i < snakeArr.length; i++) {
@@ -185,7 +187,7 @@ function algorithms(snakeHead, food, direction, snakeArr, size) {
         }
     } else if (direction == 3) {
         // nextSnake.push([snakeHead[0], snakeHead[1] - 1])
-        if (snakeDie(nextSnake) || snakeHead[1] - 1 < 0) {
+        if (snakeDie(nextSnake)) {
             var top = 0
             var bottom = 0
             for (var i = 0; i < snakeArr.length; i++) {
