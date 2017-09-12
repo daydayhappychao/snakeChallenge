@@ -2,7 +2,7 @@ var snake = {
     map: '#map',
     class: 'active',
     foodClass: 'food',
-    size: 50,
+    size: 40,
     speed: 10,
     start: function () {
         var activeClass = this.class
@@ -24,7 +24,7 @@ var snake = {
         var snakeArr = []
         var $center_tr = $(this.map).children('tr')[Math.floor(this.size / 2)]
 
-        for (var i = -1; i < 3; i++) {
+        for (var i = -1; i < 2; i++) {
             $($($center_tr).children('td')[Math.floor(this.size / 2 + i)]).addClass('active')
             snakeArr.push([Math.floor(this.size / 2), Math.floor(this.size / 2 + i)])
         }
@@ -55,6 +55,7 @@ var snake = {
         }
         document.onkeyup = keyUp;
         var run = setInterval(function () {
+            direction = algorithms(snakeArr[snakeArr.length - 1], foodPoint, direction, snakeArr, size)
             if (direction === 0) {
                 var newY = parseInt(snakeArr[snakeArr.length - 1][0]) - 1
                 var newX = parseInt(snakeArr[snakeArr.length - 1][1])
@@ -87,16 +88,16 @@ var snake = {
                 $($($(this.map).children('tr')[foodPoint[0]]).children('td')[foodPoint[1]]).addClass(nowFoodClass)
                 point++
                 $('#point').text(point)
-            } /**else if (snakeDie(snakeArr)) {
+            } else if (snakeDie(snakeArr)) {
+                console.log(snakeArr)
                 clearInterval(run)
                 return
-            }*/ else {
+            } else {
                 $($($(this.map).children('tr')[snakeArr[0][0]]).children('td')[snakeArr[0][1]])
                     .removeClass(activeClass)
                 snakeArr.splice(0, 1)
             }
             newTd.addClass(activeClass)
-            direction = algorithms(snakeArr[snakeArr.length - 1], foodPoint, direction, snakeArr, size)
         }, this.speed)
     }
 }
@@ -106,7 +107,7 @@ function getFoodPoint(size, snakeArr) {
     foodX = Math.floor(Math.random() * size)
     snakeArr.forEach(v => {
         if (v[0] == foodY && v[1] == foodX) {
-            getFoodPoint(snakeArr)
+            getFoodPoint(size, snakeArr)
             return false
         }
     })
@@ -142,7 +143,7 @@ function algorithms(snakeHead, food, direction, snakeArr, size) {
     //*死亡判断
     var nextSnake = snakeArr.slice()
     if (direction == 0) {
-        // nextSnake.push([snakeHead[0] - 1, snakeHead[1]])
+        nextSnake.push([snakeHead[0] - 1, snakeHead[1]])
         if (snakeDie(nextSnake)) {
             var left = 0
             var right = 0
@@ -158,7 +159,7 @@ function algorithms(snakeHead, food, direction, snakeArr, size) {
             else return 3
         }
     } else if (direction == 1) {
-        // nextSnake.push([snakeHead[0], snakeHead[1] + 1])
+        nextSnake.push([snakeHead[0], parseInt(snakeHead[1]) + 1])
         if (snakeDie(nextSnake)) {
             var top = 0
             var bottom = 0
@@ -172,7 +173,7 @@ function algorithms(snakeHead, food, direction, snakeArr, size) {
             else return 0
         }
     } else if (direction == 2) {
-        // nextSnake.push([snakeHead[0] + 1, snakeHead[1]])
+        nextSnake.push([parseInt(snakeHead[0]) + 1, snakeHead[1]])
         if (snakeDie(nextSnake)) {
             var left = 0
             var right = 0
@@ -186,7 +187,7 @@ function algorithms(snakeHead, food, direction, snakeArr, size) {
             else return 3
         }
     } else if (direction == 3) {
-        // nextSnake.push([snakeHead[0], snakeHead[1] - 1])
+        nextSnake.push([snakeHead[0], snakeHead[1] - 1])
         if (snakeDie(nextSnake)) {
             var top = 0
             var bottom = 0
@@ -211,32 +212,67 @@ function algorithms(snakeHead, food, direction, snakeArr, size) {
     else if (foodX < snakeHeadX && foodY == snakeHeadY) foodDir = 6
     else if (foodX < snakeHeadX && foodY < snakeHeadY) foodDir = 7
 
-    if (foodDir === 0 && (direction == 3 || direction == 1 || direction == 0)) return 0
+    if (foodDir === 0 && (direction == 3 || direction == 1 || direction == 0)) return detectionDanger(direction, 0, snakeArr, size)
     else if (foodDir === 0 && direction == 2) {
         var random = Math.random()
-        if (random > 0.5) return 1
-        else return 3
-    } else if (foodDir === 1 && (direction == 0 || direction == 3)) return 0
-    else if (foodDir === 1 && (direction == 1 || direction == 2)) return 1
-    else if (foodDir === 2 && (direction == 0 || direction == 1 || direction == 2)) return 1
+        if (random > 0.5) return detectionDanger(direction, 1, snakeArr, size)
+        else return detectionDanger(direction, 3, snakeArr, size)
+    } else if (foodDir === 1 && (direction == 0 || direction == 3)) return detectionDanger(direction, 0, snakeArr, size)
+    else if (foodDir === 1 && (direction == 1 || direction == 2)) return detectionDanger(direction, 1, snakeArr, size)
+    else if (foodDir === 2 && (direction == 0 || direction == 1 || direction == 2)) return detectionDanger(direction, 1, snakeArr, size)
     else if (foodDir === 2 && (direction == 3)) {
         var random = Math.random()
-        if (random > 0.5) return 0
-        else return 2
-    } else if (foodDir == 3 && (direction == 0 || direction == 1)) return 1
-    else if (foodDir == 3 && (direction == 2 || direction == 3)) return 2
-    else if (foodDir == 4 && (direction == 1 || direction == 2 || direction == 3)) return 2
+        if (random > 0.5) return detectionDanger(direction, 0, snakeArr, size)
+        else return detectionDanger(direction, 2, snakeArr, size)
+    } else if (foodDir == 3 && (direction == 0 || direction == 1)) return detectionDanger(direction, 1, snakeArr, size)
+    else if (foodDir == 3 && (direction == 2 || direction == 3)) return detectionDanger(direction, 2, snakeArr, size)
+    else if (foodDir == 4 && (direction == 1 || direction == 2 || direction == 3)) return detectionDanger(direction, 2, snakeArr, size)
     else if (foodDir == 4 && (direction == 0)) {
         var random = Math.random()
-        if (random > 0.5) return 1
+        if (random > 0.5) return detectionDanger(direction, 1, snakeArr, size)
         else return 3
-    } else if (foodDir == 5 && (direction == 1 || direction == 2)) return 2
-    else if (foodDir == 5 && (direction == 0 || direction == 3)) return 3
-    else if (foodDir == 6 && (direction == 3 || direction == 0 || direction == 2)) return 3
+    } else if (foodDir == 5 && (direction == 1 || direction == 2)) return detectionDanger(direction, 2, snakeArr, size)
+    else if (foodDir == 5 && (direction == 0 || direction == 3)) return detectionDanger(direction, 3, snakeArr, size)
+    else if (foodDir == 6 && (direction == 3 || direction == 0 || direction == 2)) return detectionDanger(direction, 3, snakeArr, size)
     else if (foodDir == 6 && (direction == 1)) {
         var random = Math.random()
-        if (random > 0.5) return 0
-        else return 2
-    } else if (foodDir == 7 && (direction == 3 || direction == 2)) return 3
-    else if (foodDir == 7 && (direction == 0 || direction == 1)) return 0
+        if (random > 0.5) return detectionDanger(direction, 0, snakeArr, size)
+        else return detectionDanger(direction, 2, snakeArr, size)
+    } else if (foodDir == 7 && (direction == 3 || direction == 2)) return detectionDanger(direction, 3, snakeArr, size)
+    else if (foodDir == 7 && (direction == 0 || direction == 1)) return detectionDanger(direction, 0, snakeArr, size)
+}
+
+
+/**
+ * 二次处理
+ * 
+ * @param {any} currentDir 
+ * @param {any} nextDir 
+ * @param {any} snakeArr 
+ * @param {any} size 
+ */
+function detectionDanger(currentDir, nextDir, snakeArr, size, beforDir) {
+    var nextSnake = snakeArr.slice()
+    if (nextDir === 0)
+        nextSnake.push([snakeArr[snakeArr.length - 1][0] - 1, snakeArr[snakeArr.length - 1][1]])
+    else if (nextDir === 1)
+        nextSnake.push([snakeArr[snakeArr.length - 1][0], parseInt(snakeArr[snakeArr.length - 1][1]) + 1])
+    else if (nextDir === 2)
+        nextSnake.push([parseInt(snakeArr[snakeArr.length - 1][0]) + 1, snakeArr[snakeArr.length - 1]])
+    else if (nextDir === 3)
+        nextSnake.push([snakeArr[snakeArr.length - 1][0], snakeArr[snakeArr.length - 1][1] - 1])
+
+    //*死了
+    if (snakeDie(nextSnake) || snakeArr[snakeArr.length - 1][0] < 0 || snakeArr[snakeArr.length - 1][0] > (size - 1)
+        || snakeArr[snakeArr.length - 1][1] < 0 || snakeArr[snakeArr.length - 1][1] > (size - 1)) {
+        // debugger
+        if (currentDir === nextDir) {
+            if (Math.random() > 0.5) return detectionDanger(currentDir, (nextDir + 1) % 4, snakeArr, size, nextDir)
+            else return detectionDanger(currentDir, (currentDir + 3) % 4, snakeArr, size, nextDir)
+        } else {
+            if (!beforDir) return detectionDanger(currentDir, currentDir, snakeArr, size, nextDir)
+            else if (Math.random() > 0.5) return detectionDanger(currentDir, (currentDir + 1) % 4, snakeArr, size, nextDir)
+            else return detectionDanger(currentDir, (currentDir + 3) % 4, snakeArr, size, nextDir)
+        }
+    } else return nextDir
 }
