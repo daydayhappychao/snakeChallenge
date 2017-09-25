@@ -2,8 +2,8 @@ var snake = {
     map: '#map',
     class: 'active',
     foodClass: 'food',
-    size: 30,
-    speed: 100,
+    size: 10,
+    speed: 500,
     start: function () {
         var activeClass = this.class
         var nowFoodClass = this.foodClass
@@ -55,6 +55,7 @@ var snake = {
         }
         document.onkeyup = keyUp;
         var run = setInterval(function () {
+            direction = algorithms(direction, foodPoint, snakeArr, size, this.map, activeClass)
             if (direction === 0) {
                 var newY = parseInt(snakeArr[snakeArr.length - 1][0]) - 1
                 var newX = parseInt(snakeArr[snakeArr.length - 1][1])
@@ -124,7 +125,8 @@ function snakeDie(snakeArr) {
 
 
 
-function algorithms(direction, food, snakeArr, size) {
+function algorithms(direction, food, snakeArr, size, map, active) {
+    // debugger
     var snakeHead = snakeArr[snakeArr.length - 1]
     var snakeHeadX = snakeHead[1]
     var snakeHeadY = snakeHead[0]
@@ -172,11 +174,11 @@ function algorithms(direction, food, snakeArr, size) {
     } else if (foodDir == 7 && (direction == 3 || direction == 2)) nextDir = 3
     else if (foodDir == 7 && (direction == 0 || direction == 1)) nextDir = 0
 
-
+    return checkOutWay(direction, nextDir, snakeArr, size, map, active)
 
 }
 
-function checkOutWay(direction, nextDir, snakeArr, size) {
+function checkOutWay(direction, nextDir, snakeArr, size, map, active, historyDirectionArr) {
     var openList = []
     var nextSnake = snakeArr.slice()
     //*初始化nextSnake
@@ -189,7 +191,158 @@ function checkOutWay(direction, nextDir, snakeArr, size) {
     else if (nextDir === 3)
         nextSnake.push([snakeArr[snakeArr.length - 1][0], snakeArr[snakeArr.length - 1][1] - 1])
 
+    var newTd = $($($(this.map).children('tr')[snakeArr[snakeArr.length - 1][0]]).children('td')[snakeArr[snakeArr.length - 1][1]])
 
-    
+    //* 蛇在下一步执行了之后就会死，要赶紧掉头
+    if (snakeDie(nextSnake) || newTd.length === 0) {
+        //* 转了弯才死的
+        if (direction !== nextDir) {
+            var otherTurnDir = nextDir % 2 ? (4 - nextSnake) : (2 - nextSnake)
+            //*不是第一次执行checkOutWay方法了
+            if (historyDirectionArr) {
+                //*historyDirectionArr长度为3，总共就3个方向，全不行，那去死吧
+                if (historyDirectionArr.length > 2) {
+                    alert('握草，老子选择死亡')
+                    return nextDir
+                } else {
+                    if (historyDirectionArr.includes(direction)) {
+                        if (historyDirectionArr.includes(otherTurnDir)) {
+                            alert('握草，老子选择死亡')
+                            return nextDir
+                        } else {
+                            historyDirectionArr.push(nextDir)
+                            return checkOutWay(direction, otherTurnDir, snakeArr, size, map, active, historyDirectionArr)
+                        }
+                    } else {
+                        historyDirectionArr.push(nextDir)
+                        return checkOutWay(direction, direction, snakeArr, size, map, active, historyDirectionArr)
+                    }
+                }
+            }
+            //* 若是爱已不可为  
+            else {
+                return checkOutWay(direction, direction, snakeArr, size, map, active, [nextDir])
+            }
 
+        }
+        //*直走撞死的
+        else {
+            var dirType = direction % 2
+            var otherTurnDir = 0
+            if (dirType) {
+                otherTurnDir = Math.random() > 0.5 ? 0 : 2
+                if (historyDirectionArr && historyDirectionArr.includes(otherTurnDir))
+                    otherTurnDir = 2 - otherTurnDir
+                if (!historyDirectionArr)
+                    historyDirectionArr = []
+                historyDirectionArr.push(nextDir)
+                return checkOutWay(direction, otherTurnDir, snakeArr, size, map, active, historyDirectionArr)
+            } else {
+                otherTurnDir = Math.random() > 0.5 ? 1 : 3
+                if (historyDirectionArr && historyDirectionArr.includes(otherTurnDir))
+                    otherTurnDir = 4 - otherTurnDir
+                if (!historyDirectionArr)
+                    historyDirectionArr = []
+                historyDirectionArr.push(nextDir)
+                return checkOutWay(direction, otherTurnDir, snakeArr, size, map, active, historyDirectionArr)
+            }
+        }
+    }
+    //*蛇下一步看似走的很安全，进行A*判断
+    else {
+        //* 这就说明他是真的安全的，去吧皮卡丘
+        if (checkHeadTail(nextSnake, size, map, active)) {
+            return nextDir
+        }
+        //*看似很安全，实则进入了自己创造的牢笼
+        else {
+            var directions = []
+            if (direction == 0) directions = [0, 1, 3]
+            if (direction == 1) directions = [0, 1, 2]
+            if (direction == 2) directions = [2, 1, 3]
+            if (direction == 3) directions = [2, 0, 3]
+
+            if (!historyDirectionArr)
+                historyDirectionArr = []
+            historyDirectionArr.push(nextDir)
+
+
+            directions.forEach((v, k) => {
+                historyDirectionArr.forEach((vv, kk) => {
+                    if (v == vv) directions.splice(k, 1)
+                })
+            })
+
+
+            if (directions.length === 0) {
+                alert('shabi')
+                return direction
+            }
+
+            return checkOutWay(direction, directions[0], snakeArr, size, map, active, historyDirectionArr)
+        }
+    }
+
+}
+
+function checkHeadTail(snakeArr, size, map, active) {
+    var snakeHead = snakeArr[snakeArr.length - 1]
+    var snakeHeadX = snakeHead[1], snakeHeadY = snakeHead[0]
+    var snakeTail = snakeArr[0]
+    var snakeTailX = snakeTail[1], snakeTailY = snakeTail[0]
+    var openList = [], closeList = []
+    var snakeDead = true
+    openList.push({ x: snakeHeadX, y: snakeHeadY })
+
+
+    do {
+        if (openList.length == 0) {
+            break
+        }
+        var curP = openList.pop()
+        closeList.push(curP)
+
+        var surCurP = surroundPoint(curP)
+        surCurP.forEach((v, k) => {
+            //* 在地图内
+            if (v.x > -1 && v.x < size && v.y > -1 && v.y < size) {
+                //* 不在openlist和closelist内
+                if ((!existList(v, closeList)) && (!existList(v, openList))) {
+                    //*不在snakeArr内
+                    if (!existArr(v, snakeArr)) {
+                        openList.push(v)
+                    }
+                }
+            }
+        })
+    } while (!(snakeDead = existList({ x: snakeTailX, y: snakeTailY }, openList)))
+
+    return !snakeDead
+}
+function existArr(point, arr) {
+    for (var i in arr) {
+        if (point.x == arr[i][1] && point.y == arr[i][0]) {
+            return i
+        }
+    }
+    return false
+}
+function existList(point, list) {
+    for (var i in list) {
+        if (point.x == list[i].x && point.y == list[i].y) {
+            return i;
+        }
+    }
+    return false;
+}
+
+
+function surroundPoint(curPoint) {
+    var x = parseInt(curPoint.x), y = parseInt(curPoint.y);
+    return [
+        { x: x, y: y - 1 },
+        { x: x + 1, y: y },
+        { x: x, y: y + 1 },
+        { x: x - 1, y: y }
+    ]
 }
