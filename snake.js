@@ -3,7 +3,7 @@ var snake = {
     class: 'active',
     foodClass: 'food',
     speed: 20,
-    size: 60,
+    size: 20,
     start: function () {
         var activeClass = this.class
         var nowFoodClass = this.foodClass
